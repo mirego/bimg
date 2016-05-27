@@ -468,3 +468,69 @@ func BenchmarkWatermarWebp(b *testing.B) {
 	}
 	runBenchmarkResize("test.webp", options, b)
 }
+
+func BenchmarkInsertJpeg(b *testing.B) {
+	img, err := os.Open("fixtures/transparent.png")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer img.Close()
+
+	buf, err := ioutil.ReadAll(img)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := Options{
+		Insert: Insert{
+			Image: buf,
+			Left:  0,
+			Top:   0,
+		},
+	}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkInsertPng(b *testing.B) {
+	img, err := os.Open("fixtures/transparent.png")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer img.Close()
+
+	buf, err := ioutil.ReadAll(img)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := Options{
+		Insert: Insert{
+			Image: buf,
+			Left:  0,
+			Top:   0,
+		},
+	}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkInsertWebp(b *testing.B) {
+	img, err := os.Open("fixtures/transparent.png")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer img.Close()
+
+	buf, err := ioutil.ReadAll(img)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := Options{
+		Insert: Insert{
+			Image: buf,
+			Left:  0,
+			Top:   0,
+		},
+	}
+	runBenchmarkResize("test.webp", options, b)
+}

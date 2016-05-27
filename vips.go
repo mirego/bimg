@@ -424,6 +424,19 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height, extend int) (*C.Vip
 	return image, nil
 }
 
+func vipsInsert(main *C.VipsImage, sub *C.VipsImage, left, top int) (*C.VipsImage, error) {
+	var image *C.VipsImage
+	defer C.g_object_unref(C.gpointer(main))
+	defer C.g_object_unref(C.gpointer(sub))
+
+	err := C.vips_insert_bridge(main, sub, &image, C.int(left), C.int(top))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
 func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	cstring := C.CString(i.String())

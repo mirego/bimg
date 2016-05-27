@@ -118,6 +118,12 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Insert adds image on the given image.
+func (i *Image) Insert(insert Insert) ([]byte, error) {
+	options := Options{Insert: insert}
+	return i.Process(options)
+}
+
 // Watermark adds text as watermark on the given image.
 func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	options := Options{Watermark: w}

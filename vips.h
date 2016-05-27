@@ -169,6 +169,11 @@ vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, 
 }
 
 int
+vips_insert_bridge(VipsImage *main, VipsImage *sub, VipsImage **out, int left, int top) {
+	return vips_insert(main, sub, out, left, top, NULL);
+}
+
+int
 vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height) {
 	return vips_extract_area(in, out, left, top, width, height, NULL);
 }
