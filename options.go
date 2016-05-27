@@ -173,4 +173,12 @@ type Options struct {
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
 	Sharpen        Sharpen
+	Insert         Insert
+}
+
+// Insert represents the insert supported options.
+type Insert struct {
+	Image []byte
+	Left  int
+	Top   int
 }
