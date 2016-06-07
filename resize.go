@@ -354,6 +354,9 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 		return nil, err
 	}
 
+	image = nil
+	input = nil
+
 	// Compute normalized input alpha channels: for the image & input
 	normalizedAlphaImage, err := vipsLinear1(alphaImage, 1.0/255.0, 0.0)
 	if err != nil {
@@ -375,38 +378,50 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 	if err != nil {
 		return nil, err
 	}
+	t1 = nil
 
 	outAlphaNormalized, err := vipsAdd(normalizedAlphaInput, t2)
 	if err != nil {
 		return nil, err
 	}
+	normalizedAlphaInput = nil
+	t2 = nil
 
 	// Compute output RGB channels (http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
 	imageRGBPremultiplied, err := vipsMultiply(rgbImage, normalizedAlphaImage)
 	if err != nil {
 		return nil, err
 	}
+	rgbImage = nil
+	normalizedAlphaImage = nil
 
 	outRGBPremultiplied, err := vipsIthenelse(alphaInput, rgbInput, imageRGBPremultiplied, true)
 	if err != nil {
 		return nil, err
 	}
+	rgbInput = nil
+	alphaInput = nil
+	imageRGBPremultiplied = nil
 
 	outRGB, err := vipsDivide(outRGBPremultiplied, outAlphaNormalized)
 	if err != nil {
 		return nil, err
 	}
+	outRGBPremultiplied = nil
 
 	outAlpha, err := vipsLinear1(outAlphaNormalized, 255.0, 0.0)
 	if err != nil {
 		return nil, err
 	}
+	outAlphaNormalized = nil
 
 	// Join the output RGB bands and the output alpha band
 	out, err := vipsBandjoin2(outRGB, outAlpha)
 	if err != nil {
 		return nil, err
 	}
+	outRGB = nil
+	outAlpha = nil
 
 	return out, nil
 }
