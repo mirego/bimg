@@ -299,22 +299,116 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 	return image, rotated, err
 }
 
+func extractRGB(image *C.VipsImage) (*C.VipsImage, error) {
+	if vipsHasAlpha(image) {
+		return vipsExtractBand(image, 0, int(image.Bands)-1)
+	} else {
+		return image, nil
+	}
+}
+
+func extractAlpha(image *C.VipsImage) (*C.VipsImage, error) {
+	if vipsHasAlpha(image) {
+		return vipsExtractBand(image, int(image.Bands)-1, 1)
+	} else {
+		blackImage, _ := vipsBlack(int(image.Xsize), int(image.Ysize), 1)
+		return vipsLinear1(blackImage, 1.0, 255.0)
+	}
+}
+
 func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 	if len(i.Image) == 0 {
 		return image, nil
 	}
 
-	input, _, err := vipsRead(i.Image)
+	inputTmp, _, err := vipsRead(i.Image)
 	if err != nil {
 		return image, nil
 	}
 
-	image, errInsert := vipsInsert(image, input, i.Left, i.Top)
-	if errInsert != nil {
-		return image, nil
+	// Transform input image to the size of the final image with a custom position
+	input, err := vipsEmbed(inputTmp, i.Left, i.Top, int(image.Xsize), int(image.Ysize), 0)
+	if err != nil {
+		return nil, err
 	}
 
-	return image, nil
+	// Extract colors bands from the image and the input
+	rgbImage, err := extractRGB(image)
+	if err != nil {
+		return nil, err
+	}
+
+	rgbInput, err := extractRGB(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract alpha bands from the image and the input
+	alphaImage, err := extractAlpha(image)
+	if err != nil {
+		return nil, err
+	}
+
+	alphaInput, err := extractAlpha(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute normalized input alpha channels: for the image & input
+	normalizedAlphaImage, err := vipsLinear1(alphaImage, 1.0/255.0, 0.0)
+	if err != nil {
+		return nil, err
+	}
+
+	normalizedAlphaInput, err := vipsLinear1(alphaInput, 1.0/255.0, 0.0)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute normalized output alpha channel (http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
+	t1, err := vipsLinear1(normalizedAlphaInput, -1.0, 1.0)
+	if err != nil {
+		return nil, err
+	}
+
+	t2, err := vipsMultiply(normalizedAlphaImage, t1)
+	if err != nil {
+		return nil, err
+	}
+
+	outAlphaNormalized, err := vipsAdd(normalizedAlphaInput, t2)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute output RGB channels (http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
+	imageRGBPremultiplied, err := vipsMultiply(rgbImage, normalizedAlphaImage)
+	if err != nil {
+		return nil, err
+	}
+
+	outRGBPremultiplied, err := vipsIthenelse(alphaInput, rgbInput, imageRGBPremultiplied, true)
+	if err != nil {
+		return nil, err
+	}
+
+	outRGB, err := vipsDivide(outRGBPremultiplied, outAlphaNormalized)
+	if err != nil {
+		return nil, err
+	}
+
+	outAlpha, err := vipsLinear1(outAlphaNormalized, 255.0, 0.0)
+	if err != nil {
+		return nil, err
+	}
+
+	// Join the output RGB bands and the output alpha band
+	out, err := vipsBandjoin2(outRGB, outAlpha)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func watermarkImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {

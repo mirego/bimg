@@ -523,6 +523,100 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsExtractBand(image *C.VipsImage, band, numberOfBands int) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_extract_band_bridge(image, &out, C.int(band), C.int(numberOfBands))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+
+}
+
+func vipsLinear1(image *C.VipsImage, a, b float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_linear1_bridge(image, &out, C.double(a), C.double(b))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsBlack(width, height, bands int) (*C.VipsImage, error) {
+	var out *C.VipsImage
+
+	err := C.vips_black_bridge(&out, C.int(width), C.int(height), C.int(bands))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsAdd(left, right *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(left))
+	defer C.g_object_unref(C.gpointer(right))
+
+	err := C.vips_add_bridge(left, right, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsMultiply(left, right *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(left))
+	defer C.g_object_unref(C.gpointer(right))
+
+	err := C.vips_multiply_bridge(left, right, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsDivide(left, right *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(left))
+	defer C.g_object_unref(C.gpointer(right))
+
+	err := C.vips_divide_bridge(left, right, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsIthenelse(cond, in1, in2 *C.VipsImage, blend bool) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(cond))
+	defer C.g_object_unref(C.gpointer(in1))
+	defer C.g_object_unref(C.gpointer(in2))
+
+	err := C.vips_ifthenelse_bridge(cond, in1, in2, &out, C.int(boolToInt(blend)))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsBandjoin2(in1, in2 *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(in1))
+	defer C.g_object_unref(C.gpointer(in2))
+
+	err := C.vips_bandjoin2_bridge(in1, in2, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
 func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
