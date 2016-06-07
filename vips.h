@@ -355,3 +355,43 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 	return vips_sharpen(in, out, "radius", radius, "x1", x1, "y2", y2, "y3", y3, "m1", m1, "m2", m2, NULL);
 #endif
 }
+
+int
+vips_extract_band_bridge(VipsImage *in, VipsImage **out, int band, int number_of_bands) {
+	return vips_extract_band(in, out, band, "n", number_of_bands, NULL);
+}
+
+int
+vips_linear1_bridge(VipsImage *in, VipsImage **out, double a, double b) {
+	return vips_linear1(in, out, a, b, NULL);
+}
+
+int
+vips_black_bridge(VipsImage **out, int width, int height, int bands) {
+	return vips_black(out, width, height, "bands", bands, NULL);
+}
+
+int
+vips_add_bridge(VipsImage *left, VipsImage *right, VipsImage **out) {
+	return vips_add(left, right, out, NULL);
+}
+
+int
+vips_multiply_bridge(VipsImage *left, VipsImage *right, VipsImage **out) {
+	return vips_multiply(left, right, out, NULL);
+}
+
+int
+vips_divide_bridge(VipsImage *left, VipsImage *right, VipsImage **out) {
+	return vips_divide(left, right, out, NULL);
+}
+
+int
+vips_ifthenelse_bridge(VipsImage *cond, VipsImage *in1, VipsImage *in2, VipsImage **out, int blend) {
+	return vips_ifthenelse(cond, in1, in2, out, "blend", blend, NULL);
+}
+
+int
+vips_bandjoin2_bridge(VipsImage *in1, VipsImage *in2, VipsImage **out) {
+	return vips_bandjoin2(in1, in2, out, NULL);
+}

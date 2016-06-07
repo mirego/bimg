@@ -208,33 +208,35 @@ func TestImageWatermarkNoReplicate(t *testing.T) {
 }
 
 func TestImageInsert(t *testing.T) {
-	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, GravityNorth)
+	var image *Image
+	image = initImage("test.jpg")
+	buf, err := image.Crop(800, 600, GravityNorth)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	insertImage := initImage("test.jpg")
+	image = NewImage(buf)
+	insertImage := initImage("watermark.png")
 
-	buf, err := image.Insert(Insert{
+	bufInsert, err := image.Insert(Insert{
 		Image: insertImage.buffer,
-		Left:  0,
-		Top:   0,
+		Left:  20,
+		Top:   20,
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = assertSize(buf, 800, 600)
+	err = assertSize(bufInsert, 800, 600)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if DetermineImageType(buf) != JPEG {
+	if DetermineImageType(bufInsert) != JPEG {
 		t.Fatal("Image is not jpeg")
 	}
 
-	Write("fixtures/test_insert_out.jpg", buf)
+	Write("fixtures/test_insert_out.jpg", bufInsert)
 }
 
 func TestImageZoom(t *testing.T) {
