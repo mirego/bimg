@@ -332,6 +332,8 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 		return nil, err
 	}
 
+	defer C.g_object_unref(C.gpointer(inputTmp))
+
 	// Extract colors bands from the image and the input
 	rgbImage, err := extractRGB(image)
 	if err != nil {
@@ -354,8 +356,8 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 		return nil, err
 	}
 
-	image = nil
-	input = nil
+	defer C.g_object_unref(C.gpointer(image))
+	defer C.g_object_unref(C.gpointer(input))
 
 	// Compute normalized input alpha channels: for the image & input
 	normalizedAlphaImage, err := vipsLinear1(alphaImage, 1.0/255.0, 0.0)
@@ -368,6 +370,8 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 		return nil, err
 	}
 
+	defer C.g_object_unref(C.gpointer(alphaImage))
+
 	// Compute normalized output alpha channel (http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
 	t1, err := vipsLinear1(normalizedAlphaInput, -1.0, 1.0)
 	if err != nil {
@@ -378,50 +382,57 @@ func insertImage(image *C.VipsImage, i Insert) (*C.VipsImage, error) {
 	if err != nil {
 		return nil, err
 	}
-	t1 = nil
+
+	defer C.g_object_unref(C.gpointer(t1))
 
 	outAlphaNormalized, err := vipsAdd(normalizedAlphaInput, t2)
 	if err != nil {
 		return nil, err
 	}
-	normalizedAlphaInput = nil
-	t2 = nil
+
+	defer C.g_object_unref(C.gpointer(normalizedAlphaInput))
+	defer C.g_object_unref(C.gpointer(t2))
 
 	// Compute output RGB channels (http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending)
 	imageRGBPremultiplied, err := vipsMultiply(rgbImage, normalizedAlphaImage)
 	if err != nil {
 		return nil, err
 	}
-	rgbImage = nil
-	normalizedAlphaImage = nil
+
+	defer C.g_object_unref(C.gpointer(rgbImage))
+	defer C.g_object_unref(C.gpointer(normalizedAlphaImage))
 
 	outRGBPremultiplied, err := vipsIthenelse(alphaInput, rgbInput, imageRGBPremultiplied, true)
 	if err != nil {
 		return nil, err
 	}
-	rgbInput = nil
-	alphaInput = nil
-	imageRGBPremultiplied = nil
+
+	defer C.g_object_unref(C.gpointer(rgbInput))
+	defer C.g_object_unref(C.gpointer(alphaInput))
+	defer C.g_object_unref(C.gpointer(imageRGBPremultiplied))
 
 	outRGB, err := vipsDivide(outRGBPremultiplied, outAlphaNormalized)
 	if err != nil {
 		return nil, err
 	}
-	outRGBPremultiplied = nil
+
+	defer C.g_object_unref(C.gpointer(outRGBPremultiplied))
 
 	outAlpha, err := vipsLinear1(outAlphaNormalized, 255.0, 0.0)
 	if err != nil {
 		return nil, err
 	}
-	outAlphaNormalized = nil
+
+	defer C.g_object_unref(C.gpointer(outAlphaNormalized))
 
 	// Join the output RGB bands and the output alpha band
 	out, err := vipsBandjoin2(outRGB, outAlpha)
 	if err != nil {
 		return nil, err
 	}
-	outRGB = nil
-	outAlpha = nil
+
+	defer C.g_object_unref(C.gpointer(outRGB))
+	defer C.g_object_unref(C.gpointer(outAlpha))
 
 	return out, nil
 }
