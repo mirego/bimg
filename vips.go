@@ -412,9 +412,13 @@ func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	return image, nil
 }
 
-func vipsEmbed(input *C.VipsImage, left, top, width, height, extend int) (*C.VipsImage, error) {
+func vipsEmbed(input *C.VipsImage, left int, top int, width int, height int, extend Extend) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
+
+	if extend > 5 {
+		extend = ExtendBackground
+	}
 
 	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
 	if err != 0 {
