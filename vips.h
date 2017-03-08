@@ -30,6 +30,9 @@ enum types {
 	WEBP,
 	PNG,
 	TIFF,
+	GIF,
+	PDF,
+	SVG,
 	MAGICK
 };
 
