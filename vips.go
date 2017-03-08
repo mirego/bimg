@@ -135,6 +135,55 @@ func VipsMemory() VipsMemoryInfo {
 	}
 }
 
+// VipsIsTypeSupported returns true if the given image type
+// is supported by the current libvips compilation.
+func VipsIsTypeSupported(t ImageType) bool {
+	if t == JPEG {
+		return int(C.vips_type_find_bridge(C.JPEG)) != 0
+	}
+	if t == WEBP {
+		return int(C.vips_type_find_bridge(C.WEBP)) != 0
+	}
+	if t == PNG {
+		return int(C.vips_type_find_bridge(C.PNG)) != 0
+	}
+	if t == GIF {
+		return int(C.vips_type_find_bridge(C.GIF)) != 0
+	}
+	if t == PDF {
+		return int(C.vips_type_find_bridge(C.PDF)) != 0
+	}
+	if t == SVG {
+		return int(C.vips_type_find_bridge(C.SVG)) != 0
+	}
+	if t == TIFF {
+		return int(C.vips_type_find_bridge(C.TIFF)) != 0
+	}
+	if t == MAGICK {
+		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
+	}
+	return false
+}
+
+// VipsIsTypeSupportedSave returns true if the given image type
+// is supported by the current libvips compilation for the
+// save operation.
+func VipsIsTypeSupportedSave(t ImageType) bool {
+	if t == JPEG {
+		return int(C.vips_type_find_save_bridge(C.JPEG)) != 0
+	}
+	if t == WEBP {
+		return int(C.vips_type_find_save_bridge(C.WEBP)) != 0
+	}
+	if t == PNG {
+		return int(C.vips_type_find_save_bridge(C.PNG)) != 0
+	}
+	if t == TIFF {
+		return int(C.vips_type_find_save_bridge(C.TIFF)) != 0
+	}
+	return false
+}
+
 func vipsExifOrientation(image *C.VipsImage) int {
 	return int(C.vips_exif_orientation(image))
 }

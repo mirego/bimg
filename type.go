@@ -24,13 +24,64 @@ const (
 // ImageType represents an image type value.
 type ImageType int
 
+var (
+	htmlCommentRegex = regexp.MustCompile("(?i)<!--([\\s\\S]*?)-->")
+	svgRegex         = regexp.MustCompile(`(?i)^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
+)
+
 // ImageTypes stores as pairs of image types supported and its alias names.
 var ImageTypes = map[ImageType]string{
 	JPEG:   "jpeg",
 	PNG:    "png",
 	WEBP:   "webp",
 	TIFF:   "tiff",
+	GIF:    "gif",
+	PDF:    "pdf",
+	SVG:    "svg",
 	MAGICK: "magick",
+}
+
+// imageMutex is used to provide thread-safe synchronization
+// for SupportedImageTypes map.
+var imageMutex = &sync.RWMutex{}
+
+// SupportedImageType represents whether a type can be loaded and/or saved by
+// the current libvips compilation.
+type SupportedImageType struct {
+	Load bool
+	Save bool
+}
+
+// SupportedImageTypes stores the optional image type supported
+// by the current libvips compilation.
+// Note: lazy evaluation as demand is required due
+// to bootstrap runtime limitation with C/libvips world.
+var SupportedImageTypes = map[ImageType]SupportedImageType{}
+
+// discoverSupportedImageTypes is used to fill SupportedImageTypes map.
+func discoverSupportedImageTypes() {
+	imageMutex.Lock()
+	for imageType := range ImageTypes {
+		SupportedImageTypes[imageType] = SupportedImageType{
+			Load: VipsIsTypeSupported(imageType),
+			Save: VipsIsTypeSupportedSave(imageType),
+		}
+	}
+	imageMutex.Unlock()
+}
+
+// isBinary checks if the given buffer is a binary file.
+func isBinary(buf []byte) bool {
+	if len(buf) < 24 {
+		return false
+	}
+	for i := 0; i < 24; i++ {
+		charCode, _ := utf8.DecodeRuneInString(string(buf[i]))
+		if charCode == 65533 || charCode <= 8 {
+			return true
+		}
+	}
+	return false
 }
 
 // IsSVGImage returns true if the given buffer is a valid SVG image.

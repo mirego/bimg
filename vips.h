@@ -118,6 +118,52 @@ vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrin
 }
 
 int
+vips_type_find_bridge(int t) {
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "gifload");
+	}
+	if (t == PDF) {
+		return vips_type_find("VipsOperation", "pdfload");
+	}
+	if (t == TIFF) {
+		return vips_type_find("VipsOperation", "tiffload");
+	}
+	if (t == SVG) {
+		return vips_type_find("VipsOperation", "svgload");
+	}
+	if (t == WEBP) {
+		return vips_type_find("VipsOperation", "webpload");
+	}
+	if (t == PNG) {
+		return vips_type_find("VipsOperation", "pngload");
+	}
+	if (t == JPEG) {
+		return vips_type_find("VipsOperation", "jpegload");
+	}
+	if (t == MAGICK) {
+		return vips_type_find("VipsOperation", "magickload");
+	}
+	return 0;
+}
+
+int
+vips_type_find_save_bridge(int t) {
+	if (t == TIFF) {
+		return vips_type_find("VipsOperation", "tiffsave_buffer");
+	}
+	if (t == WEBP) {
+		return vips_type_find("VipsOperation", "webpsave_buffer");
+	}
+	if (t == PNG) {
+		return vips_type_find("VipsOperation", "pngsave_buffer");
+	}
+	if (t == JPEG) {
+		return vips_type_find("VipsOperation", "jpegsave_buffer");
+	}
+	return 0;
+}
+
+int
 vips_rotate(VipsImage *in, VipsImage **out, int angle) {
 	int rotate = VIPS_ANGLE_D0;
 
