@@ -1,5 +1,11 @@
 package bimg
 
+import (
+	"regexp"
+	"sync"
+	"unicode/utf8"
+)
+
 const (
 	// UNKNOWN represents an unknow image type value.
 	UNKNOWN ImageType = iota
