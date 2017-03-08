@@ -1,8 +1,5 @@
 package bimg
 
-// ImageType represents an image type value.
-type ImageType int
-
 const (
 	// UNKNOWN represents an unknow image type value.
 	UNKNOWN ImageType = iota
@@ -14,9 +11,18 @@ const (
 	PNG
 	// TIFF represents the TIFF image type.
 	TIFF
+	// GIF represents the GIF image type.
+	GIF
+	// PDF represents the PDF type.
+	PDF
+	// SVG represents the SVG image type.
+	SVG
 	// MAGICK represents the libmagick compatible genetic image type.
 	MAGICK
 )
+
+// ImageType represents an image type value.
+type ImageType int
 
 // ImageTypes stores as pairs of image types supported and its alias names.
 var ImageTypes = map[ImageType]string{
