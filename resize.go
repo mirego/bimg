@@ -11,6 +11,54 @@ import (
 	"math"
 )
 
+func FixRotation(buf []byte, o Options) ([]byte, error) {
+	defer C.vips_thread_shutdown()
+
+	if len(buf) == 0 {
+		return nil, errors.New("Image buffer is empty")
+	}
+
+	image, imageType, err := vipsRead(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Clone and define default options
+	o = applyDefaults(o, imageType)
+
+	if IsTypeSupported(o.Type) == false {
+		return nil, errors.New("Unsupported image output type")
+	}
+
+	debug("Options: %#v", o)
+
+	// Auto rotate image based on EXIF orientation header
+	image, rotated, err := rotateAndFlipImage(image, o)
+	if err != nil {
+		return nil, err
+	}
+
+	// If JPEG image, retrieve the buffer
+	if rotated && imageType == JPEG && !o.NoAutoRotate {
+		buf, err = getImageBuffer(image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	saveOptions := vipsSaveOptions{
+		Quality:        o.Quality,
+		Type:           o.Type,
+		Compression:    o.Compression,
+		Interlace:      o.Interlace,
+		NoProfile:      o.NoProfile,
+		Interpretation: o.Interpretation,
+	}
+
+	// Finally get the resultant buffer
+	return vipsSave(image, saveOptions)
+}
+
 // Resize is used to transform a given image as byte buffer
 // with the passed options.
 func Resize(buf []byte, o Options) ([]byte, error) {
