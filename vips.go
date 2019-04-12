@@ -15,7 +15,7 @@ import (
 	"sync"
 	"unsafe"
 
-	d "github.com/tj/go-debug"
+	d "github.com/visionmedia/go-debug"
 )
 
 // debug is internally used to
